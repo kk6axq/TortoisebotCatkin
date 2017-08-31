@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+
+<robot name="tortoisebot" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+	<!--<xacro:property name="pi" value="3.14159265" />
+	<xacro:property name="body_radius" value="0.17" />
+	<xacro:property name="body_height" value="0.2" />
+	<xacro:property name="body_mass" value="2.0" />
+
+	<xacro:property name="rear_caster_radius" value="0.01" />
+	<xacro:property name="rear_caster_mass" value="0.1" />
+
+	<xacro:property name="wheel_radius" value="0.036" />
+	<xacro:property name="wheel_height" value="0.025" />
+	<xacro:property name="wheel_mass" value="0.1" />
+
+	<xacro:property name="right_wheel_color" value="red" />
+	<xacro:property name="left_wheel_color" value="white" />
+	
+	<xacro:macro name="inertia_cylinder" params="mass radius height">
+		<inertial>
+			<mass value="${mass}"/>
+			<inertia ixx="${(${mass} / 12)*((3 * ${radius} * ${radius}) + (${height} * ${height}))}"
+				ixy="0.0" ixz="0.0" iyy="${(${mass} / 12)*((3 * ${radius} * ${radius}) + (${height} * ${height}))}"
+				iyz="0.0" izz="${(${mass} * ${radius} * ${radius}) / 2}"/>
+		</inertial>
+	</xacro:macro>
+
+	<xacro:macro name="inertia_sphere" params="mass radius">
+		<inertial>
+			<mass value="${mass}"/>
+			<inertia ixx="${2 * ${mass} * ${radius} * ${radius} / 5}"
+				ixy="0.0" ixz="0.0" iyy="${2 * ${mass} * ${radius} * ${radius} / 5}"
+				iyz="0.0" izz="${2 * ${mass} * ${radius} * ${radius} / 5}"/>
+		</inertial>
+	</xacro:macro>
+	<material name="white">
+		<color rgba="1, 1, 1, 1"/>
+	</material>
+
+	<material name="green">
+		<color rgba="0.05 0.75 0.05 1"/>
+	</material>
+
+	<material name="black">
+		<color rgba="1, 1, 1, 1"/>
+	</material>
+
+	<material name="red">
+		<color rgba="0.75, 0.05, 0.05, 1"/>
+	</material>
+	
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<cylinder length="${body_height}" radius="${body_radius}"/>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<cylinder length="${body_height}" radius="${body_radius}"/>
+			</geometry>
+		</collision>
+		
+		<xacro:inertia_cylinder mass="${body_mass}" radius="${body_radius}" height="${body_height}" />
+		
+	</link>
+
+	<link name="rear_caster">
+		<visual>
+			<geometry>	
+				<sphere radius="${rear_caster_radius}"/>
+			</geometry>
+			
+		</visual>
+
+		<collision>
+			<geometry>
+				<sphere radius="${rear_caster_radius}"/>
+			</geometry>
+		</collision>
+
+		
+		<xacro:inertia_sphere mass="${rear_caster_mass}" radius="${rear_caster_radius}" />
+		
+	</link>
+
+	<joint name="rear_caster_joint" type="continuous">
+		<axis xyz="0 1 0"/>
+		<parent link="base_link"/>
+		<child link="rear_caster"/>
+		<origin rpy="0 0 0" xyz="-0.1 0 -0.1"/>
+	</joint>
+	<xacro:macro name="wheel" params="prefix reflect">
+		<link name="${prefix}_wheel">
+			<visual>
+				<geometry>	
+					<cylinder length="${wheel_height}" radius="${wheel_radius}"/>
+				</geometry>
+				<material name="${${prefix}_wheel_color}"/>
+			</visual>
+			<collision>
+				<geometry>
+					<cylinder length="${wheel_height}" radius="${wheel_radius}"/>
+				</geometry>
+			</collision>
+
+			<xacro:inertia_cylinder mass="${wheel_mass}" radius="${wheel_radius}" height="${wheel_height}" />
+		</link>
+
+		<joint name="${prefix}_wheel_joint" type="continuous">
+			<axis xyz="0 0 1"/>
+			<parent link="base_link"/>
+			<child link="${prefix}_wheel"/>
+
+			<origin rpy="${${pi} / 2 * -1} 0 0" xyz="0 ${${reflect} * 0.1175} -0.074"/>
+		</joint>
+	</xacro:macro>
+	<xacro:wheel prefix="right" reflect="-1" />
+	<xacro:wheel prefix="left" reflect="1" />
+
+	<link name='/camera_depth_optical_frame'>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.073 0.276 0.072</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://kinect/meshes/kinect.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='camera' type='depth'>
+          <update_rate>20</update_rate>
+          <camera name='__default__'>
+            <horizontal_fov>1.0472</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>3</far>
+            </clip>
+          </camera>
+
+	  <plugin name='kinect_camera_controller' filename='libgazebo_ros_openni_kinect.so'>
+            <cameraName>camera</cameraName>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <imageTopicName>rgb/image_raw</imageTopicName>
+            <depthImageTopicName>depth/image_raw</depthImageTopicName>
+            <pointCloudTopicName>depth/points</pointCloudTopicName>
+            <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+            <frameName>camera_depth_optical_frame</frameName>
+            <baseline>0.1</baseline>
+            <distortion_k1>0.0</distortion_k1>
+            <distortion_k2>0.0</distortion_k2>
+            <distortion_k3>0.0</distortion_k3>
+            <distortion_t1>0.0</distortion_t1>
+            <distortion_t2>0.0</distortion_t2>
+            <pointCloudCutoff>0.4</pointCloudCutoff>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+         
+
+        </sensor>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+
+
+	<joint name="kinect_to_base_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="/camera_depth_optical_frame"/>
+		<origin rpy="0 0 0" xyz="-0.2 0 0.5"/>
+	</joint>-->
+</robot>

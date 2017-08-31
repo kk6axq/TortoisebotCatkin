@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package>
+  <name>harebot_description</name>
+  <version>0.0.0</version>
+  <description>The harebot_description package</description>
+  <maintainer email="kk6axq@gmail.com">Lukas Severinghaus</maintainer>
+  <license>GPLv3</license>
+  <url type="bugtracker">https://github.com/kk6axq/harebot/issues</url>
+  <url type="repository">https://github.com/kk6axq/harebot</url>
+  <author email="kk6axq@gmail.com">Lukas Severinghaus</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

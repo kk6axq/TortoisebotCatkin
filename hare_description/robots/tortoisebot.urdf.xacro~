@@ -1,0 +1,15 @@
+﻿<?xml version="1.0"?>
+
+<robot name="tortoisebot" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+	<xacro:property name="M_PI" value="3.14159265" />
+	<xacro:property name="simulation" value="true" />	
+	<xacro:include filename="$(find ca_description)/urdf/create_base.urdf.xacro" />
+  	<xacro:include filename="$(find ca_description)/urdf/create_2_gazebo.urdf.xacro" />
+	<xacro:include filename="$(find ca_description)/urdf/create_base_gazebo.urdf.xacro" />
+	<xacro:include filename="$(find tortoisebot_description)/urdf/turtlebot_modified/kinect.urdf.xacro" />
+        <xacro:create_base wheel_separation="0.235" base_diameter="0.3485">
+		<mesh filename="package://ca_description/meshes/create_2.dae" />
+	</xacro:create_base>
+	
+	<xacro:sensor_kinect parent="base_link" />
+</robot>
